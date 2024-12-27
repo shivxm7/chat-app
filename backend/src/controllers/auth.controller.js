@@ -1,6 +1,7 @@
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import clodinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -89,6 +90,38 @@ export const logout = (req, res) => {
     return res.status(200).json({ message: "logout Successfully" });
   } catch (error) {
     console.log("error in logot controller: ", error.message);
+    res.status(500).json({ message: "Internal Server error" });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic } = req.body;
+    const userId = User._id;
+
+    if (!profilePic) {
+      return res.status(401).json({ message: "profile pic is required" });
+    }
+
+    const uploadedResponse = await clodinary.uploader.upload(profilePic); // upload on clodinary
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePic: uploadedResponse.secure_url }, // upload profile pic on database
+      { new: true } // gave updated object of user
+    );
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.log("error in update Profile controller: ", error.message);
+    res.status(500).json({ message: "Internal Server error" });
+  }
+};
+
+export const checkAuth = (req, res) => {
+  try {
+    return res.status(200).json(req.user);
+  } catch (error) {
+    console.log("error in CheckAuth controller: ", error.message);
     res.status(500).json({ message: "Internal Server error" });
   }
 };
