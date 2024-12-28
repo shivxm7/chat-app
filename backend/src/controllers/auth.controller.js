@@ -97,20 +97,34 @@ export const logout = (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { profilePic } = req.body;
-    const userId = User._id;
+    const userId = req.user._id;
 
-    if (!profilePic) {
+    if (!profilePic || typeof profilePic !== "string") {
       return res.status(401).json({ message: "profile pic is required" });
     }
 
-    const uploadedResponse = await clodinary.uploader.upload(profilePic); // upload on clodinary
+    let uploadedResponse;
+    try {
+      uploadedResponse = await clodinary.uploader.upload(profilePic); // upload on clodinary
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Error uploading image to Cloudinary" });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { profilePic: uploadedResponse.secure_url }, // upload profile pic on database
       { new: true } // gave updated object of user
     );
 
-    res.status(200).json(updatedUser);
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Exclude sensitive fields before returning the response
+    const { password, ...userWithoutPassword } = updatedUser.toObject();
+    res.status(200).json(userWithoutPassword);
   } catch (error) {
     console.log("error in update Profile controller: ", error.message);
     res.status(500).json({ message: "Internal Server error" });
