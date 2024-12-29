@@ -33,7 +33,26 @@ export const useMessageStore = create((set) => ({
     }
   },
 
+  sendMessage: async (messageData) => {
+    set((state) => {
+      const { selectedUser, messages } = state;
+      if (!selectedUser) {
+        toast.error("No user selected!");
+        return;
+      }
+
+      axiosInstance
+        .post(`/message/send/${selectedUser._id}`, messageData)
+        .then((res) => {
+          set({ messages: [...messages, res.data] });
+        })
+        .catch((error) => {
+          toast.error(error.message);
+        });
+    });
+  },
+
   setSelectedUser: (selectedUser) => {
-    set({ selectedUser });
+    set({ selectedUser: selectedUser });
   },
 }));
