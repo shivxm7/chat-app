@@ -5,8 +5,13 @@ import { Users } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 
 const Sidebar = () => {
-  const { users, getUser, setSelectedUser, selectedUser, isUserLoading } =
-    useMessageStore();
+  const {
+    users = [],
+    getUser,
+    setSelectedUser,
+    selectedUser,
+    isUserLoading,
+  } = useMessageStore();
 
   const { onlineUsers } = useAuthStore();
 

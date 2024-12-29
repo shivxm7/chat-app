@@ -36,7 +36,13 @@ const ChatInput = () => {
     if (!text.trim() && !imagePreview) return;
 
     try {
-      await sendMessage({ text: text.trim(), image: imagePreview });
+      const store = useMessageStore.getState();
+      if (!store.selectedUser) {
+        toast.error("No user selected!");
+        return;
+      }
+
+      await store.sendMessage({ text: text.trim(), image: imagePreview });
 
       setText("");
       setImagePreview(null);

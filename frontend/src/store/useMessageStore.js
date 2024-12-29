@@ -33,26 +33,30 @@ export const useMessageStore = create((set) => ({
     }
   },
 
-  sendMessage: async (messageData) => {
-    set((state) => {
-      const { selectedUser, messages } = state;
-      if (!selectedUser) {
-        toast.error("No user selected!");
-        return;
-      }
-
-      axiosInstance
-        .post(`/message/send/${selectedUser._id}`, messageData)
-        .then((res) => {
-          set({ messages: [...messages, res.data] });
-        })
-        .catch((error) => {
-          toast.error(error.message);
-        });
-    });
+  setSelectedUser: (user) => {
+    set({ selectedUser: user });
   },
 
-  setSelectedUser: (selectedUser) => {
-    set({ selectedUser: selectedUser });
+  sendMessage: async (messageData) => {
+    const { selectedUser, messages } = useMessageStore.getState(); // Access state directly
+    if (!selectedUser) {
+      toast.error("No user selected!");
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.post(
+        `/message/send/${selectedUser._id}`,
+        messageData
+      );
+
+      // Safely update messages
+      useMessageStore.setState({
+        messages: [...messages, res.data],
+      });
+    } catch (error) {
+      toast.error(error.message);
+      console.error("Failed to send message:", error);
+    }
   },
 }));
