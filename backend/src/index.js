@@ -13,11 +13,11 @@ import cookieParser from "cookie-parser";
 
 // used for reciving request from frontend on different port
 import cors from "cors";
+import { app, server } from "./lib/socket.js";
 
 // using environment variable
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT;
 
 app.use(
@@ -33,7 +33,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log("Server is running on PORT:", PORT);
   connectDb();
 });
